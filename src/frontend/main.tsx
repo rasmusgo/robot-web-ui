@@ -1,10 +1,80 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, Touch } from "react";
 import ReactDOM from "react-dom";
 
 import "./style.css";
 
+// Hook
+const useKeyPress = (targetKey: string) => {
+  // State for keeping track of whether key is pressed
+  const [keyPressed, setKeyPressed] = useState(false);
+
+  // If pressed key is our target key then set to true
+  const downHandler = ({ key }: KeyboardEvent) => {
+    if (key === targetKey) {
+      setKeyPressed(true);
+    }
+  }
+
+  // If released key is our target key then set to false
+  const upHandler = ({ key }: KeyboardEvent) => {
+    if (key === targetKey) {
+      setKeyPressed(false);
+    }
+  };
+
+  // Add event listeners
+  useEffect(() => {
+    window.addEventListener('keydown', downHandler);
+    window.addEventListener('keyup', upHandler);
+    // Remove event listeners on cleanup
+    return () => {
+      window.removeEventListener('keydown', downHandler);
+      window.removeEventListener('keyup', upHandler);
+    };
+  }, []); // Empty array ensures that effect is only run on mount and unmount
+
+  return keyPressed;
+}
+
+const PressableCell: React.SFC<{
+  callback: (pressed: boolean) => void,
+  pressed: boolean,
+}> = (props) => {
+  type TouchEvent = React.TouchEvent<HTMLTableDataCellElement>;
+  const onPress = (event: TouchEvent) => {
+    event.preventDefault();
+    props.callback(true);
+  };
+  const onRelease = (event: TouchEvent) => {
+    event.preventDefault();
+    props.callback(false);
+  };
+  return (
+    <td
+      onTouchStart={ onPress }
+      onTouchEnd={ onRelease }
+      className={ props.pressed ? 'pressed' : '' }
+    >
+      { props.children }
+    </td>
+  );
+};
+
 const App = () => {
   const [lastCommand, updateLastCommand] = useState(' ');
+  const pressedKeyW = useKeyPress('w');
+  const pressedKeyA = useKeyPress('a');
+  const pressedKeyS = useKeyPress('s');
+  const pressedKeyD = useKeyPress('d');
+  const [pressedCellQ, updatePressedCellQ ] = useState(false);
+  const [pressedCellW, updatePressedCellW ] = useState(false);
+  const [pressedCellE, updatePressedCellE ] = useState(false);
+  const [pressedCellA, updatePressedCellA ] = useState(false);
+  const [pressedCellD, updatePressedCellD ] = useState(false);
+  const [pressedCellZ, updatePressedCellZ ] = useState(false);
+  const [pressedCellX, updatePressedCellX ] = useState(false);
+  const [pressedCellC, updatePressedCellC ] = useState(false);
+
   const sendCommand = (command: string) => {
     fetch(
       '/',
@@ -20,40 +90,69 @@ const App = () => {
       .then(console.log)
       .catch(console.error);
     updateLastCommand(command);
+  };
+
+  const y: number =
+    (pressedKeyW || pressedCellQ || pressedCellW || pressedCellE ? 1 : 0) -
+    (pressedKeyS || pressedCellZ || pressedCellX || pressedCellC ? 1 : 0);
+  const x: number =
+    (pressedKeyD || pressedCellE || pressedCellD || pressedCellC ? 1 : 0) -
+    (pressedKeyA || pressedCellQ || pressedCellA || pressedCellZ ? 1 : 0);
+
+  const computeNewCommand = (): string => {
+    if (y > 0) {
+      if (x < 0) {
+        return 'q';
+      }
+      if (x > 0) {
+        return 'e';
+      }
+      return 'w';
+    }
+    if (y < 0) {
+      if (x < 0) {
+        return 'z';
+      }
+      if (x > 0) {
+        return 'c';
+      }
+      return 's';
+    }
+
+    if (x < 0) {
+      return 'a';
+    }
+    if (x > 0) {
+      return 'd';
+    }
+    return ' ';
+  };
+
+  const newCommand = computeNewCommand();
+  if (newCommand != lastCommand) {
+    sendCommand(newCommand);
   }
+
   return (
     <div className="App">
       <h1>Active command: {lastCommand}</h1>
+      <p>x: { x } y { y }</p>
       <table>
         <tbody>
           <tr>
-            <td>
-            </td>
-            <td>
-              <button onClick={() => sendCommand('w')}>F</button>
-            </td>
-            <td>
-            </td>
+            <PressableCell pressed={ lastCommand == 'q' } callback={ updatePressedCellQ }>⬉</PressableCell>
+            <PressableCell pressed={ lastCommand == 'w' } callback={ updatePressedCellW }>⬆</PressableCell>
+            <PressableCell pressed={ lastCommand == 'e' } callback={ updatePressedCellE }>⬈</PressableCell>
           </tr>
           <tr>
-            <td>
-              <button onClick={() => sendCommand('a')}>L</button>
-            </td>
-            <td>
-              <button onClick={() => sendCommand(' ')}>stop</button>
-            </td>
-            <td>
-              <button onClick={() => sendCommand('d')}>R</button>
-            </td>
+            <PressableCell pressed={ lastCommand == 'a' } callback={ updatePressedCellA }>⟲</PressableCell>
+            <PressableCell pressed={ lastCommand == ' ' } callback={ () => {}           }> </PressableCell>
+            <PressableCell pressed={ lastCommand == 'd' } callback={ updatePressedCellD }>⟳</PressableCell>
           </tr>
           <tr>
-            <td>
-            </td>
-            <td>
-              <button onClick={() => sendCommand('s')}>B</button>
-            </td>
-            <td>
-            </td>
+            <PressableCell pressed={ lastCommand == 'z' } callback={ updatePressedCellZ }>⬋</PressableCell>
+            <PressableCell pressed={ lastCommand == 's' } callback={ updatePressedCellX }>↓</PressableCell>
+            <PressableCell pressed={ lastCommand == 'c' } callback={ updatePressedCellC }>⬊</PressableCell>
           </tr>
         </tbody>
       </table>

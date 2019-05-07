@@ -7,3 +7,17 @@
 
     text-align: center;
 }
+
+table {
+    margin: auto;
+    touch-action: none;
+}
+
+td {
+    width: 80px;
+    height: 80px;
+}
+
+td.pressed {
+    background: green;
+}
