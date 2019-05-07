@@ -1,11 +1,28 @@
 import express from 'express';
-import SerialPort from 'serialport';
+import SerialPort from 'serialPort';
+import path from 'path';
 
-const path = '/dev/cu.usbserial-AL02L3L9';
-const serialport = new SerialPort(path, { baudRate: 57600 });
+const serialPortPath = '/dev/cu.usbserial-AL02L3L9';
+const serialPort = new SerialPort(serialPortPath, { baudRate: 57600 });
 
 const app = express();
 
-app.get('/', (req, res) => res.send('Hello World!'));
+// Template configuration
+app.set('view engine', 'ejs');
+app.set('views', 'public');
 
-app.listen(3000, () => console.log('Example app listening on port 3000!'));
+// Static files configuration
+app.use('/assets', express.static(path.join(__dirname, 'frontend')));
+
+// Controllers
+app.get('/', (req, res) => {
+  res.render('index');
+});
+
+app.post('/', (req, res) => {
+  console.log(`post body: '${req.body}'`);
+  serialPort.write(' ');
+  res.send('OK!');
+});
+
+app.listen(3000, () => console.log('Robot server app listening on http://localhost:3000'));
