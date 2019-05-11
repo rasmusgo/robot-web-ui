@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 
 const TAU = Math.PI * 2;
 const degrees_from_radians = 360 / TAU;
@@ -85,8 +85,11 @@ const createWheel = ({
 
 export const Arc = () => {
   const b = 122 / 2;
-  const [cx, cy] = [150, 150];
-  const [px, py] = [10, 130];
+  const [cx, cy] = [500, 500];
+  const [px, updatePx] = useState(110);
+  const [py, updatePy] = useState(400);
+  const svgElement = useRef<SVGSVGElement>(null);
+
   const wheelOffset = 30;
   const wheels: Wheel[] = [
     createWheel({ax: cx - b, ay: cy - b, px, py, wheelOffset, neutralTheta: TAU / 2}),
@@ -95,14 +98,32 @@ export const Arc = () => {
     createWheel({ax: cx + b, ay: cy + b, px, py, wheelOffset, neutralTheta: 0}),
   ];
 
+  const onMouse: React.MouseEventHandler<SVGSVGElement> = (event) => {
+    if (event.buttons == 0) {
+      return;
+    }
+    if (svgElement.current == null) {
+      return;
+    }
+    const svgRect = svgElement.current.getBoundingClientRect();
+    updatePx((event.clientX - svgRect.left) / svgRect.width * 1000);
+    updatePy((event.clientY - svgRect.top) / svgRect.height * 1000);
+    console.log('mouse', event.clientX, event.clientY);
+  };
+
   return (
     <svg
-      viewBox="0 0 300 300"
+      viewBox="0 0 1000 1000"
       width={300}
       height={300}
       style={{
         border: '1px solid black',
+        fill: 'white',
+        position: 'relative',
       }}
+      onMouseDown={ onMouse }
+      onMouseMove={ onMouse }
+      ref={svgElement}
     >
       { wheels.map((wheel, index) => (
         <RotatedRect
@@ -113,6 +134,17 @@ export const Arc = () => {
           height={52}
           theta={wheel.theta}
           fill="gray"
+        />
+      )) }
+      { wheels.map((wheel, index) => (
+        <RotatedRect
+          key={`wheel-${index}`}
+          cx={wheel.ax}
+          cy={wheel.ay}
+          width={38}
+          height={25}
+          theta={wheel.theta}
+          fill="silver"
         />
       )) }
       <RotatedRect
