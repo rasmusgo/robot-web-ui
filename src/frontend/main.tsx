@@ -1,7 +1,8 @@
-import React, { useEffect, useState, Touch } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
 import "./style.css";
+import { Arc } from "./arc_control";
 
 // Hook
 const useKeyPress = (targetKey: string) => {
@@ -156,6 +157,9 @@ const App = () => {
           </tr>
         </tbody>
       </table>
+      <div>
+        <Arc/>
+      </div>
     </div>
   )
 };
