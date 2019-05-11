@@ -34,6 +34,10 @@ const normalized = ([x, y]: [number, number]): [number, number] => {
     [x / length, y / length] : [0, 0];
 }
 
+const magnitude = ([x, y]: [number, number]): number => {
+  return Math.sqrt(x*x + y*y);
+}
+
 // Returns theta: -PI ≤ theta ≤ PI
 const normalizedAngle = (theta: number) => {
   return ((theta % TAU + TAU + Math.PI) % TAU) - Math.PI;
@@ -51,11 +55,14 @@ interface Wheel {
   wy:           number;
   theta:        number;
   neutralTheta: number;
+  speedFactor:  number;
 }
 
 const createWheel = ({
   ax,
   ay,
+  cx,
+  cy,
   px,
   py,
   wheelOffset,
@@ -63,6 +70,8 @@ const createWheel = ({
 }: {
   ax: number,
   ay: number,
+  cx: number,
+  cy: number,
   px: number,
   py: number,
   wheelOffset: number,
@@ -70,9 +79,16 @@ const createWheel = ({
 }): Wheel => {
   const [dx, dy] = normalized([px - ax, py - ay]);
   const rawTheta = Math.atan2(dy, dx);
-  const [wx, wy, theta] = angleDifference(rawTheta, neutralTheta) > TAU / 4 ?
-    [ax - dx * wheelOffset, ay - dy * wheelOffset, rawTheta + TAU / 2] :
-    [ax + dx * wheelOffset, ay + dy * wheelOffset, rawTheta];
+  const [wx, wy, sign, theta] = angleDifference(rawTheta, neutralTheta) > TAU / 4 ?
+    [ax - dx * wheelOffset, ay - dy * wheelOffset, -1, rawTheta + TAU / 2] :
+    [ax + dx * wheelOffset, ay + dy * wheelOffset, +1, rawTheta];
+
+  const distanceFromPointToCenter = magnitude([cx - px, cy - py]);
+  const distanceFromPointToAxis = magnitude([ax - px, ay - py]);
+  const signedDistanceFromPointToWheel = distanceFromPointToAxis - wheelOffset;
+  const speedFactor = sign * signedDistanceFromPointToWheel /
+    Math.max(distanceFromPointToCenter, 150);
+
   return {
     ax,
     ay,
@@ -80,7 +96,16 @@ const createWheel = ({
     wy,
     theta,
     neutralTheta,
+    speedFactor,
   };
+}
+
+const normalizeWheelSpeeds = (wheels: Wheel[]): Wheel[] => {
+  const maxSpeed = Math.max(...wheels.map(wheel => Math.abs(wheel.speedFactor)));
+  return wheels.map(wheel => ({
+    ...wheel,
+    speedFactor: wheel.speedFactor / maxSpeed,
+  }));
 }
 
 export const Arc = () => {
@@ -91,12 +116,12 @@ export const Arc = () => {
   const svgElement = useRef<SVGSVGElement>(null);
 
   const wheelOffset = 30;
-  const wheels: Wheel[] = [
-    createWheel({ax: cx - b, ay: cy - b, px, py, wheelOffset, neutralTheta: TAU / 2}),
-    createWheel({ax: cx + b, ay: cy - b, px, py, wheelOffset, neutralTheta: 0}),
-    createWheel({ax: cx - b, ay: cy + b, px, py, wheelOffset, neutralTheta: TAU / 2}),
-    createWheel({ax: cx + b, ay: cy + b, px, py, wheelOffset, neutralTheta: 0}),
-  ];
+  const wheels: Wheel[] = normalizeWheelSpeeds([
+    createWheel({ax: cx - b, ay: cy - b, cx, cy, px, py, wheelOffset, neutralTheta: TAU / 2}),
+    createWheel({ax: cx + b, ay: cy - b, cx, cy, px, py, wheelOffset, neutralTheta: 0}),
+    createWheel({ax: cx - b, ay: cy + b, cx, cy, px, py, wheelOffset, neutralTheta: TAU / 2}),
+    createWheel({ax: cx + b, ay: cy + b, cx, cy, px, py, wheelOffset, neutralTheta: 0}),
+  ]);
 
   const updateTarget = (clientX: number, clientY: number) => {
     if (svgElement.current == null) {
@@ -197,6 +222,19 @@ export const Arc = () => {
           style={{
             stroke: 'black',
             strokeWidth: 1,
+          }}
+        />
+      )) }
+      { wheels.map((wheel, index) => (
+        <line
+          key={`line-${index}`}
+          x1={wheel.wx}
+          y1={wheel.wy}
+          x2={wheel.wx + Math.cos(wheel.theta + TAU / 4) * wheel.speedFactor * 100}
+          y2={wheel.wy + Math.sin(wheel.theta + TAU / 4) * wheel.speedFactor * 100}
+          style={{
+            stroke: 'red',
+            strokeWidth: 5,
           }}
         />
       )) }
