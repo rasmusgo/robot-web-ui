@@ -98,17 +98,24 @@ export const Arc = () => {
     createWheel({ax: cx + b, ay: cy + b, px, py, wheelOffset, neutralTheta: 0}),
   ];
 
-  const onMouse: React.MouseEventHandler<SVGSVGElement> = (event) => {
-    if (event.buttons == 0) {
-      return;
-    }
+  const updateTarget = (clientX: number, clientY: number) => {
     if (svgElement.current == null) {
       return;
     }
     const svgRect = svgElement.current.getBoundingClientRect();
-    updatePx((event.clientX - svgRect.left) / svgRect.width * 1000);
-    updatePy((event.clientY - svgRect.top) / svgRect.height * 1000);
-    console.log('mouse', event.clientX, event.clientY);
+    updatePx((clientX - svgRect.left) / svgRect.width * 1000);
+    updatePy((clientY - svgRect.top) / svgRect.height * 1000);
+  }
+
+  const onTouch: React.TouchEventHandler<SVGSVGElement> = (event) => {
+    updateTarget(event.touches[0].clientX, event.touches[0].clientY);
+  };
+
+  const onMouse: React.MouseEventHandler<SVGSVGElement> = (event) => {
+    if (event.buttons == 0) {
+      return;
+    }
+    updateTarget(event.clientX, event.clientY);
   };
 
   return (
@@ -121,6 +128,8 @@ export const Arc = () => {
         fill: 'white',
         position: 'relative',
       }}
+      onTouchStartCapture={ onTouch }
+      onTouchMoveCapture={ onTouch }
       onMouseDown={ onMouse }
       onMouseMove={ onMouse }
       ref={svgElement}
