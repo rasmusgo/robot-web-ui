@@ -42,11 +42,12 @@ const PressableCell: React.SFC<{
   pressed: boolean,
 }> = (props) => {
   type TouchEvent = React.TouchEvent<HTMLTableDataCellElement>;
-  const onPress = (event: TouchEvent) => {
+  type MouseEvent = React.MouseEvent<HTMLTableDataCellElement>;
+  const onPress = (event: TouchEvent | MouseEvent) => {
     event.preventDefault();
     props.callback(true);
   };
-  const onRelease = (event: TouchEvent) => {
+  const onRelease = (event: TouchEvent | MouseEvent) => {
     event.preventDefault();
     props.callback(false);
   };
@@ -54,6 +55,8 @@ const PressableCell: React.SFC<{
     <td
       onTouchStart={ onPress }
       onTouchEnd={ onRelease }
+      onMouseDown={ onPress }
+      onMouseUp={ onRelease }
       className={ props.pressed ? 'pressed' : '' }
     >
       { props.children }
