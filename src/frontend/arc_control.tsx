@@ -36,7 +36,12 @@ const normalized = ([x, y]: [number, number]): [number, number] => {
 
 // Returns theta: -PI ≤ theta ≤ PI
 const normalizedAngle = (theta: number) => {
-  return (((theta % TAU) + TAU + Math.PI) % TAU) - Math.PI;
+  return ((theta % TAU + TAU + Math.PI) % TAU) - Math.PI;
+}
+
+// Returns theta: 0 ≤ theta ≤ PI
+const angleDifference = (alfa: number, beta: number) => {
+  return Math.abs(normalizedAngle(alfa - beta));
 }
 
 interface Wheel {
@@ -65,7 +70,7 @@ const createWheel = ({
 }): Wheel => {
   const [dx, dy] = normalized([px - ax, py - ay]);
   const rawTheta = Math.atan2(dy, dx);
-  const [wx, wy, theta] = Math.abs(normalizedAngle(rawTheta - neutralTheta)) > TAU / 4 ?
+  const [wx, wy, theta] = angleDifference(rawTheta, neutralTheta) > TAU / 4 ?
     [ax - dx * wheelOffset, ay - dy * wheelOffset, rawTheta + TAU / 2] :
     [ax + dx * wheelOffset, ay + dy * wheelOffset, rawTheta];
   return {
