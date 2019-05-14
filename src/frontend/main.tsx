@@ -70,6 +70,11 @@ const App = () => {
   const pressedKeyA = useKeyPress('a');
   const pressedKeyS = useKeyPress('s');
   const pressedKeyD = useKeyPress('d');
+  const pressedKeyQ = useKeyPress('q');
+  const pressedKeyE = useKeyPress('e');
+  const pressedKeyZ = useKeyPress('z');
+  const pressedKeyX = useKeyPress('x');
+  const pressedKeyC = useKeyPress('c');
   const [pressedCellQ, updatePressedCellQ ] = useState(false);
   const [pressedCellW, updatePressedCellW ] = useState(false);
   const [pressedCellE, updatePressedCellE ] = useState(false);
@@ -97,13 +102,16 @@ const App = () => {
   };
 
   const y: number =
-    (pressedKeyW || pressedCellQ || pressedCellW || pressedCellE ? 1 : 0) -
-    (pressedKeyS || pressedCellZ || pressedCellX || pressedCellC ? 1 : 0);
+    (pressedKeyQ || pressedKeyW || pressedKeyE || pressedCellQ || pressedCellW || pressedCellE ? 1 : 0) -
+    (pressedKeyZ || pressedKeyS || pressedKeyC || pressedCellZ || pressedCellX || pressedCellC ? 1 : 0);
   const x: number =
-    (pressedKeyD || pressedCellE || pressedCellD || pressedCellC ? 1 : 0) -
-    (pressedKeyA || pressedCellQ || pressedCellA || pressedCellZ ? 1 : 0);
+    (pressedKeyE || pressedKeyD || pressedKeyC || pressedCellE || pressedCellD || pressedCellC ? 1 : 0) -
+    (pressedKeyQ || pressedKeyA || pressedKeyZ || pressedCellQ || pressedCellA || pressedCellZ ? 1 : 0);
 
   const computeNewCommand = (): string => {
+    if (pressedKeyX) {
+      return 'x';
+    }
     if (y > 0) {
       if (x < 0) {
         return 'q';
