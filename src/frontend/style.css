@@ -8,16 +8,36 @@
     text-align: center;
 }
 
-table {
+table.controller-table {
     margin: auto;
     touch-action: none;
 }
 
-td {
+table.controller-table td {
     width: 80px;
     height: 80px;
 }
 
-td.pressed {
+table.controller-table td.pressed {
     background: green;
+}
+
+table.arc-wheels-table {
+    margin: auto;
+    touch-action: none;
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+table.arc-wheels-table td,th {
+    margin: 0px;
+    padding: 5px;
+    border: 1px solid black;
+}
+
+table.arc-wheels-table input {
+    width: 70px;
+    text-align: center;
+    font: inherit;
+    margin: 0px;
 }

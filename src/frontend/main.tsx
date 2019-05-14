@@ -141,7 +141,7 @@ const App = () => {
     <div className="App">
       <h1>Active command: {lastCommand}</h1>
       <p>x: { x } y { y }</p>
-      <table>
+      <table className="controller-table">
         <tbody>
           <tr>
             <PressableCell pressed={ lastCommand == 'q' } callback={ updatePressedCellQ }>⬉</PressableCell>

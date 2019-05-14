@@ -117,10 +117,10 @@ export const Arc = () => {
 
   const wheelOffset = 30;
   const wheels: Wheel[] = normalizeWheelSpeeds([
-    createWheel({ax: cx - b, ay: cy - b, cx, cy, px, py, wheelOffset, neutralTheta: TAU / 2}),
-    createWheel({ax: cx + b, ay: cy - b, cx, cy, px, py, wheelOffset, neutralTheta: 0}),
     createWheel({ax: cx - b, ay: cy + b, cx, cy, px, py, wheelOffset, neutralTheta: TAU / 2}),
+    createWheel({ax: cx - b, ay: cy - b, cx, cy, px, py, wheelOffset, neutralTheta: TAU / 2}),
     createWheel({ax: cx + b, ay: cy + b, cx, cy, px, py, wheelOffset, neutralTheta: 0}),
+    createWheel({ax: cx + b, ay: cy - b, cx, cy, px, py, wheelOffset, neutralTheta: 0}),
   ]);
 
   const updateTarget = (clientX: number, clientY: number) => {
@@ -144,100 +144,129 @@ export const Arc = () => {
   };
 
   return (
-    <svg
-      viewBox="0 0 1000 1000"
-      width={300}
-      height={300}
-      style={{
-        border: '1px solid black',
-        fill: 'white',
-        position: 'relative',
-      }}
-      onTouchStartCapture={ onTouch }
-      onTouchMoveCapture={ onTouch }
-      onMouseDown={ onMouse }
-      onMouseMove={ onMouse }
-      ref={svgElement}
-    >
-      { wheels.map((wheel, index) => (
+    <form onSubmit={() => {}}>
+      <svg
+        viewBox="0 0 1000 1000"
+        width={300}
+        height={300}
+        style={{
+          border: '1px solid black',
+          fill: 'white',
+          position: 'relative',
+        }}
+        onTouchStartCapture={ onTouch }
+        onTouchMoveCapture={ onTouch }
+        onMouseDown={ onMouse }
+        onMouseMove={ onMouse }
+        ref={svgElement}
+      >
+        { wheels.map((wheel, index) => (
+          <RotatedRect
+            key={`wheel-${index}`}
+            cx={wheel.wx}
+            cy={wheel.wy}
+            width={12}
+            height={52}
+            theta={wheel.theta}
+            fill="gray"
+          />
+        )) }
+        { wheels.map((wheel, index) => (
+          <RotatedRect
+            key={`wheel-${index}`}
+            cx={wheel.ax}
+            cy={wheel.ay}
+            width={38}
+            height={25}
+            theta={wheel.theta}
+            fill="silver"
+          />
+        )) }
         <RotatedRect
-          key={`wheel-${index}`}
-          cx={wheel.wx}
-          cy={wheel.wy}
-          width={12}
-          height={52}
-          theta={wheel.theta}
-          fill="gray"
+          cx={cx}
+          cy={cy}
+          width={168}
+          height={70}
+          theta={0}
+          fill="wheat"
         />
-      )) }
-      { wheels.map((wheel, index) => (
-        <RotatedRect
-          key={`wheel-${index}`}
-          cx={wheel.ax}
-          cy={wheel.ay}
-          width={38}
-          height={25}
-          theta={wheel.theta}
-          fill="silver"
-        />
-      )) }
-      <RotatedRect
-        cx={cx}
-        cy={cy}
-        width={168}
-        height={70}
-        theta={0}
-        fill="wheat"
-      />
-      { wheels.map((wheel, index) => (
+        { wheels.map((wheel, index) => (
+          <circle
+            key={`axis-${index}`}
+            cx={wheel.ax}
+            cy={wheel.ay}
+            r={2.5}
+            style={{
+              fill: 'lightblue',
+              strokeWidth: 1,
+              stroke: 'black',
+            }}
+          />
+        )) }
         <circle
-          key={`axis-${index}`}
-          cx={wheel.ax}
-          cy={wheel.ay}
+          cx={px}
+          cy={py}
           r={2.5}
           style={{
-            fill: 'lightblue',
+            fill: 'red',
             strokeWidth: 1,
             stroke: 'black',
           }}
         />
-      )) }
-      <circle
-        cx={px}
-        cy={py}
-        r={2.5}
-        style={{
-          fill: 'red',
-          strokeWidth: 1,
-          stroke: 'black',
-        }}
-      />
-      { wheels.map((wheel, index) => (
-        <line
-          key={`line-${index}`}
-          x1={px}
-          y1={py}
-          x2={wheel.ax}
-          y2={wheel.ay}
-          style={{
-            stroke: 'black',
-            strokeWidth: 1,
-          }}
-        />
-      )) }
-      { wheels.map((wheel, index) => (
-        <line
-          key={`line-${index}`}
-          x1={wheel.wx}
-          y1={wheel.wy}
-          x2={wheel.wx + Math.cos(wheel.theta + TAU / 4) * wheel.speedFactor * 100}
-          y2={wheel.wy + Math.sin(wheel.theta + TAU / 4) * wheel.speedFactor * 100}
-          style={{
-            stroke: 'red',
-            strokeWidth: 5,
-          }}
-        />
-      )) }
-    </svg>
+        { wheels.map((wheel, index) => (
+          <line
+            key={`line-${index}`}
+            x1={px}
+            y1={py}
+            x2={wheel.ax}
+            y2={wheel.ay}
+            style={{
+              stroke: 'black',
+              strokeWidth: 1,
+            }}
+          />
+        )) }
+        { wheels.map((wheel, index) => (
+          <line
+            key={`line-${index}`}
+            x1={wheel.wx}
+            y1={wheel.wy}
+            x2={wheel.wx + Math.cos(wheel.theta + TAU / 4) * wheel.speedFactor * 100}
+            y2={wheel.wy + Math.sin(wheel.theta + TAU / 4) * wheel.speedFactor * 100}
+            style={{
+              stroke: 'red',
+              strokeWidth: 5,
+            }}
+          />
+        )) }
+      </svg>
+      <table className="arc-wheels-table">
+        <tbody>
+          <tr>
+            <th>id</th>
+            <th>x</th>
+            <th>y</th>
+            <th>theta offset</th>
+            <th>speed factor</th>
+          </tr>
+          <tr key={`point-values`}>
+            <td>target offset</td>
+            <td><input type="number" value={Math.round((px - cx) * 100) / 100} onChange={ e => updatePx(+e.target.value + cx) }/></td>
+            <td><input type="number" value={Math.round((py - cy) * 100) / 100} onChange={ e => updatePy(+e.target.value + cy) }/></td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          { wheels.map((wheel, index) => (
+            <tr key={`wheel-values-${index}`}>
+              <td>wheel {index}</td>
+              <td>{(wheel.ax - cx).toFixed(0)}</td>
+              <td>{(wheel.ay - cy).toFixed(0)}</td>
+              <td>{(normalizedAngle(wheel.theta - wheel.neutralTheta) * degrees_from_radians).toFixed(2)}°</td>
+              <td>{wheel.speedFactor.toFixed(3)}</td>
+            </tr>
+          )) }
+        </tbody>
+      </table>
+    </form>
   );
 }
